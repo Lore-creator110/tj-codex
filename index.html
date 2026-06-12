@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TJ Codex</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c1282d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TJ Codex">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;1,6..96,300&family=Cormorant+Garamond:ital,wght@0,300;0,600;0,700;1,300;1,700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet">
 <style>
   /* Precarica Cormorant Garamond prima della splash */
@@ -1867,7 +1874,8 @@
 <!-- ===== COACH APP ===== -->
 <div id="coachGate" style="display:none">
 
-  <!-- Header coach fisso -->\n  <div class="app-header coach-header-bar" style="position:sticky;top:0;z-index:100">
+  <!-- Header coach fisso -->
+  <div class="app-header coach-header-bar" style="position:sticky;top:0;z-index:100">
     <div class="header-logo-wrap">
       <svg width="38" height="42" viewBox="0 0 180 200" fill="none" xmlns="http://www.w3.org/2000/svg">
         <text x="8" y="148" font-family="Georgia,'Times New Roman',serif" font-size="148" font-weight="700" fill="var(--muted2)" letter-spacing="-4">T</text>
@@ -1906,6 +1914,10 @@
         <div class="coach-nav-item" id="cnav-libreria" onclick="switchCoachTab('libreria')">
           <span class="coach-nav-icon">🎬</span>
           <span class="coach-nav-label">Libreria</span>
+        </div>
+        <div class="coach-nav-item" id="cnav-macchinari" onclick="switchCoachTab('macchinari')">
+          <span class="coach-nav-icon">🔧</span>
+          <span class="coach-nav-label">Macchinari</span>
         </div>
       </div>
       <div class="coach-sidebar-bottom">
@@ -2033,12 +2045,66 @@
                 <button class="vtab" onclick="libAddVideoLink()">Aggiungi link video</button>
               </div>
             </div>
+            <div style="margin-bottom:8px">
+              <span class="mini-label">Macchinari associati (opzionale)</span>
+              <div id="libMacGrid" class="lib-video-grid"></div>
+              <div class="lib-add-row" id="libMacAddRow">
+                <button class="vtab" onclick="libAddMacchinario()">Collega macchinario</button>
+              </div>
+            </div>
             <div class="btn-row" style="margin-top:16px">
               <button class="btn" onclick="libCancelEdit()">Annulla</button>
               <button class="btn btn-primary" onclick="libSaveExercise()">Salva</button>
             </div>
           </div>
 
+        </div>
+      </div>
+
+      <!-- ====== SEZIONE: MACCHINARI ====== -->
+      <div id="cpane-macchinari" class="coach-tab-pane">
+        <div class="coach-page-header">
+          <div>
+            <div class="coach-page-title">Rubrica Macchinari</div>
+            <div class="coach-page-subtitle">Foto e riferimenti dei macchinari per i tuoi atleti</div>
+          </div>
+          <button class="btn btn-accent" style="font-size:11px;padding:7px 14px;flex-shrink:0" onclick="macNewItem()">+ Nuovo</button>
+        </div>
+
+        <div class="lib-desktop-layout">
+          <!-- Lista macchinari -->
+          <div>
+            <div class="lib-grid" id="macList">
+              <div class="lib-grid-empty">Nessun macchinario in rubrica</div>
+            </div>
+          </div>
+
+          <!-- Form crea/modifica -->
+          <div class="lib-side-form" id="macForm">
+            <h4 id="macFormTitle">NUOVO MACCHINARIO</h4>
+            <input type="hidden" id="macItemId" value="">
+            <div class="auth-field" style="margin-bottom:12px">
+              <label class="fld">Nome macchinario</label>
+              <input class="inp" id="macName" placeholder="es. Chest Press, Lat Machine, Cavo alto…">
+            </div>
+            <div class="auth-field" style="margin-bottom:12px">
+              <label class="fld">Note (opzionale)</label>
+              <textarea class="notes-ta" id="macDesc" rows="2" placeholder="Setup, regolazioni, note d'uso…"></textarea>
+            </div>
+            <div style="margin-bottom:8px">
+              <span class="mini-label">Foto macchinario</span>
+              <div id="macPhotoGrid" class="lib-video-grid"></div>
+              <div class="lib-add-row" id="macPhotoAddRow">
+                <button class="vtab" onclick="macAddPhoto()">Aggiungi link foto</button>
+                <button class="vtab" onclick="document.getElementById('macPhotoFileInput').click()">📷 Dal dispositivo</button>
+                <input type="file" id="macPhotoFileInput" accept="image/*" style="display:none" onchange="macUploadPhoto(event)">
+              </div>
+            </div>
+            <div class="btn-row" style="margin-top:16px">
+              <button class="btn" onclick="macCancelEdit()">Annulla</button>
+              <button class="btn btn-primary" onclick="macSaveItem()">Salva</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2133,6 +2199,16 @@
     <div class="spieg-modal-sub" id="spiegModalSub"></div>
     <div class="spieg-video-list" id="spiegVideoList"></div>
     <button class="btn spieg-close" onclick="closeSpiegModal()">Chiudi</button>
+  </div>
+</div>
+
+<!-- MODAL MACCHINARI (atleta, sola lettura) -->
+<div class="spieg-modal-back" id="macModal" style="display:none" onclick="if(event.target===this)closeMacModal()">
+  <div class="spieg-modal">
+    <h4 id="macModalName">---</h4>
+    <div class="spieg-modal-sub" id="macModalSub"></div>
+    <div id="macModalList" style="display:flex;flex-direction:column;gap:14px;margin-top:12px"></div>
+    <button class="btn spieg-close" onclick="closeMacModal()">Chiudi</button>
   </div>
 </div>
 
@@ -2479,6 +2555,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 
 <script>
@@ -2653,7 +2730,7 @@ const FIREBASE_CONFIG = {
 };
 const CLOUD_ENABLED = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.indexOf('INCOLLA')===-1);
 
-let fbAuth=null, fbDb=null, fbUser=null, fbUserDoc=null, _cloudUnsub=null;
+let fbAuth=null, fbDb=null, fbStorage=null, fbUser=null, fbUserDoc=null, _cloudUnsub=null;
 let READONLY=false, COACH_VIEW_UID=null, _authMode='login', _cloudT=null;
 let coachNotes={}, _coachNotesUnsub=null, _coachNoteT=null;
 /* Feature #5 */
@@ -2669,6 +2746,7 @@ function initFirebase(){
     firebase.initializeApp(FIREBASE_CONFIG);
     fbAuth=firebase.auth();
     fbDb=firebase.firestore();
+    fbStorage=firebase.storage();
     fbDb.enablePersistence({synchronizeTabs:true}).catch(()=>{});  // cache offline
     return true;
   }catch(e){ console.error('Firebase init error',e); return false; }
@@ -3627,13 +3705,14 @@ async function authSubmit(){
 /* ---- switchCoachTab aggiornato per richieste ---- */
 const _origSwitchCoachTab = switchCoachTab;
 switchCoachTab = function(tab){
-  ['atleti','requests','libreria','account'].forEach(t => {
+  ['atleti','requests','libreria','macchinari','account'].forEach(t => {
     const pane = document.getElementById('cpane-' + t);
     if(pane) pane.classList.toggle('active', t === tab);
     const nav = document.getElementById('cnav-' + t);
     if(nav) nav.classList.toggle('active', t === tab);
   });
   if(tab === 'libreria') libLoad();
+  if(tab === 'macchinari') macLoad();
   if(tab === 'account')  renderCoachAccountTab();
   if(tab === 'requests') loadPendingRequests();
   const mc = document.getElementById('coachMainContent');
@@ -4252,16 +4331,15 @@ const LIB_MAX_VIDEOS = 5;
 
 function switchCoachTab(tab) {
   // Aggiorna pane attivo
-  ['atleti','libreria','account'].forEach(t => {
+  ['atleti','libreria','macchinari','account'].forEach(t => {
     const pane = document.getElementById('cpane-'+t);
     if(pane) pane.classList.toggle('active', t===tab);
-    // Step 1: aggiorna sidebar nav items (vecchi ctab-* rimossi)
     const nav = document.getElementById('cnav-'+t);
     if(nav) nav.classList.toggle('active', t===tab);
   });
   if(tab==='libreria') libLoad();
+  if(tab==='macchinari') macLoad();
   if(tab==='account')  renderCoachAccountTab();
-  // Scrolla in cima al contenuto
   const mc = document.getElementById('coachMainContent');
   if(mc) mc.scrollTop = 0;
 }
@@ -4417,9 +4495,10 @@ function libNewExercise() {
   document.getElementById('libExCategory').value = 'petto';
   document.getElementById('libExDesc').value = '';
   _libEditingVideos = [];
+  _libEditingMacchinari = [];
   libRenderVideoForm();
-  libRenderList(); // aggiorna stato editing sulle card
-  // Scrolla al form su mobile
+  libRenderMacForm();
+  libRenderList();
   if(window.innerWidth < 900){
     document.getElementById('libForm').scrollIntoView({behavior:'smooth'});
   } else {
@@ -4436,8 +4515,10 @@ function libEditExercise(id) {
   document.getElementById('libExCategory').value = ex.category || 'petto';
   document.getElementById('libExDesc').value = ex.description || '';
   _libEditingVideos = (ex.videos || []).map(v => ({url: v.url||v, title: v.title||''}));
+  _libEditingMacchinari = (ex.macchinari || []).slice();
   libRenderVideoForm();
-  libRenderList(); // aggiorna bordo editing sulla card
+  libRenderMacForm();
+  libRenderList();
   if(window.innerWidth < 900){
     document.getElementById('libForm').scrollIntoView({behavior:'smooth'});
   } else {
@@ -4452,9 +4533,10 @@ function libCancelEdit() {
   document.getElementById('libExCategory').value = 'petto';
   document.getElementById('libExDesc').value = '';
   _libEditingVideos = [];
+  _libEditingMacchinari = [];
   libRenderVideoForm();
-  libRenderList(); // rimuove bordo editing
-
+  libRenderMacForm();
+  libRenderList();
 }
 
 function libRenderVideoForm() {
@@ -4507,6 +4589,7 @@ async function libSaveExercise() {
     category,
     description,
     videos: _libEditingVideos.map(v => ({url: v.url, title: v.title})),
+    macchinari: _libEditingMacchinari.slice(),
     visibleToAthleteIds: athleteIds,
     updatedAt: Date.now(),
   };
@@ -4613,6 +4696,327 @@ function openSpiegModal(ex, exName) {
 
 function closeSpiegModal() {
   document.getElementById('spiegModal').style.display = 'none';
+}
+
+/* ============================================================
+   RUBRICA MACCHINARI — Coach (CRUD) + Atleta (visualizzazione)
+   ============================================================ */
+
+// ---- Stato editing ----
+let _macEditingPhotos = [];
+const MAC_MAX_PHOTOS = 5;
+
+// ---- Coach: carica lista ----
+async function macLoad() {
+  const box = document.getElementById('macList');
+  if (!box) return;
+  if (!CLOUD_ENABLED || !fbDb || !fbUser) { box.innerHTML = '<div class="lib-grid-empty">Accedi per usare la rubrica</div>'; return; }
+  try {
+    const qs = await fbDb.collection('machineryLibrary').where('ownerId','==',fbUser.uid).get();
+    if (qs.empty) { box.innerHTML = '<div class="lib-grid-empty">Nessun macchinario in rubrica</div>'; return; }
+    const items = [];
+    qs.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+    items.sort((a,b) => (a.nameLower||'').localeCompare(b.nameLower||''));
+    box.innerHTML = '';
+    items.forEach(m => {
+      const card = document.createElement('div');
+      card.className = 'lib-card';
+      card.innerHTML =
+        '<div class="lib-card-name">' + escapeHtml(m.name) + '</div>' +
+        (m.photos && m.photos.length ? '<span class="lib-card-vids">📷 ' + m.photos.length + ' foto</span>' : '') +
+        (m.description ? '<div class="lib-card-cat" style="margin-top:4px;font-size:11px;color:var(--muted2)">' + escapeHtml(m.description.slice(0,60)) + '</div>' : '') +
+        '<div class="lib-card-actions">' +
+          '<button class="lib-card-btn" title="Modifica" onclick="event.stopPropagation();macEditItem(\'' + m.id + '\')">✏️</button>' +
+          '<button class="lib-card-btn" title="Elimina" onclick="event.stopPropagation();macDeleteItem(\'' + m.id + '\',\'' + escapeHtml(m.name).replace(/'/g,"\\'") + '\')">🗑️</button>' +
+        '</div>';
+      card.onclick = () => macEditItem(m.id);
+      box.appendChild(card);
+    });
+  } catch(e) {
+    console.error('macLoad error:', e);
+    box.innerHTML = '<div class="lib-grid-empty">Errore caricamento</div>';
+  }
+}
+
+// ---- Coach: nuovo ----
+function macNewItem() {
+  document.getElementById('macFormTitle').textContent = 'NUOVO MACCHINARIO';
+  document.getElementById('macItemId').value = '';
+  document.getElementById('macName').value = '';
+  document.getElementById('macDesc').value = '';
+  _macEditingPhotos = [];
+  macRenderPhotoForm();
+  document.getElementById('macForm').scrollIntoView({behavior:'smooth'});
+}
+
+// ---- Coach: modifica ----
+async function macEditItem(id) {
+  if (!fbDb || !fbUser) return;
+  try {
+    const doc = await fbDb.collection('machineryLibrary').doc(id).get();
+    if (!doc.exists) return;
+    const m = doc.data();
+    document.getElementById('macFormTitle').textContent = 'MODIFICA MACCHINARIO';
+    document.getElementById('macItemId').value = id;
+    document.getElementById('macName').value = m.name || '';
+    document.getElementById('macDesc').value = m.description || '';
+    _macEditingPhotos = (m.photos || []).map(p => ({url: p.url||p, caption: p.caption||''}));
+    macRenderPhotoForm();
+    document.getElementById('macForm').scrollIntoView({behavior:'smooth'});
+  } catch(e) {}
+}
+
+// ---- Coach: annulla ----
+function macCancelEdit() {
+  document.getElementById('macFormTitle').textContent = 'NUOVO MACCHINARIO';
+  document.getElementById('macItemId').value = '';
+  document.getElementById('macName').value = '';
+  document.getElementById('macDesc').value = '';
+  _macEditingPhotos = [];
+  macRenderPhotoForm();
+}
+
+// ---- Coach: render form foto ----
+function macRenderPhotoForm() {
+  const grid = document.getElementById('macPhotoGrid');
+  const addRow = document.getElementById('macPhotoAddRow');
+  if (!grid) return;
+  grid.innerHTML = '';
+  _macEditingPhotos.forEach((p, i) => {
+    const label = p.caption || p.url.split('/').pop().slice(0,30) || 'Foto ' + (i+1);
+    const tile = document.createElement('div');
+    tile.className = 'lib-video-tile';
+    tile.innerHTML = '<div class="lib-video-tile-play">📷</div><div class="lib-video-tile-title">' + escapeHtml(label) + '</div><button class="lib-video-del" onclick="macRemovePhoto(' + i + ')" title="Rimuovi">&#x2715;</button>';
+    grid.appendChild(tile);
+  });
+  if (addRow) addRow.style.display = _macEditingPhotos.length >= MAC_MAX_PHOTOS ? 'none' : 'flex';
+}
+
+// ---- Coach: upload foto dal dispositivo → Firebase Storage ----
+async function macUploadPhoto(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  if (!fbStorage || !fbUser) { showNotif('Storage non disponibile'); return; }
+  if (_macEditingPhotos.length >= MAC_MAX_PHOTOS) { showNotif('Limite ' + MAC_MAX_PHOTOS + ' foto raggiunto'); return; }
+  if (file.size > 10 * 1024 * 1024) { showNotif('⚠️ Foto troppo grande (max 10MB)'); return; }
+  showNotif('⏳ Caricamento in corso…');
+  try {
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = 'machinery/' + fbUser.uid + '/' + genId() + '.' + ext;
+    const ref = fbStorage.ref(path);
+    await ref.put(file);
+    const url = await ref.getDownloadURL();
+    const caption = file.name.replace(/\.[^.]+$/, '').slice(0, 40);
+    _macEditingPhotos.push({url, caption, storagePath: path});
+    macRenderPhotoForm();
+    showNotif('📷 Foto caricata');
+  } catch(err) {
+    showNotif('⚠️ Errore upload: ' + (err && err.message || ''));
+  }
+}
+
+// ---- Coach: aggiungi foto ----
+function macAddPhoto() {
+  if (_macEditingPhotos.length >= MAC_MAX_PHOTOS) { showNotif('Limite ' + MAC_MAX_PHOTOS + ' foto raggiunto'); return; }
+  const url = window.prompt('Incolla il link della foto (Google Foto, Drive, Imgur, ecc.)');
+  if (!url || !url.trim()) return;
+  const caption = window.prompt('Didascalia (opzionale)', '') || '';
+  _macEditingPhotos.push({url: url.trim(), caption: caption.trim()});
+  macRenderPhotoForm();
+}
+
+// ---- Coach: rimuovi foto ----
+function macRemovePhoto(idx) {
+  const photo = _macEditingPhotos[idx];
+  if (photo && photo.storagePath && fbStorage) {
+    fbStorage.ref(photo.storagePath).delete().catch(()=>{});
+  }
+  _macEditingPhotos.splice(idx, 1);
+  macRenderPhotoForm();
+}
+
+// ---- Coach: salva ----
+async function macSaveItem() {
+  if (!CLOUD_ENABLED || !fbDb || !fbUser) { showNotif('Accedi per usare la rubrica'); return; }
+  const name = (document.getElementById('macName').value || '').trim();
+  if (!name) { showNotif('Inserisci il nome del macchinario'); return; }
+  const description = (document.getElementById('macDesc').value || '').trim();
+  const existingId = document.getElementById('macItemId').value;
+  const data = {
+    ownerId: fbUser.uid,
+    name,
+    nameLower: name.toLowerCase(),
+    description,
+    photos: _macEditingPhotos.map(p => ({url: p.url, caption: p.caption, storagePath: p.storagePath||''})),
+    updatedAt: Date.now(),
+  };
+  try {
+    if (existingId) {
+      await fbDb.collection('machineryLibrary').doc(existingId).update(data);
+      showNotif('Macchinario aggiornato');
+    } else {
+      data.createdAt = Date.now();
+      await fbDb.collection('machineryLibrary').add(data);
+      showNotif('Macchinario salvato in rubrica');
+    }
+    macCancelEdit();
+    await macLoad();
+  } catch(e) {
+    showNotif('Errore salvataggio: ' + (e && e.message || ''));
+  }
+}
+
+// ---- Coach: elimina ----
+async function macDeleteItem(id, name) {
+  if (!(await appConfirm('Eliminare "' + name + '" dalla rubrica?', true))) return;
+  try {
+    await fbDb.collection('machineryLibrary').doc(id).delete();
+    showNotif('Macchinario eliminato');
+    await macLoad();
+  } catch(e) {
+    showNotif('Errore eliminazione: ' + (e && e.message || ''));
+  }
+}
+
+// ---- Libreria esercizi: gestione macchinari associati ----
+let _libEditingMacchinari = [];
+
+function libRenderMacForm() {
+  const grid = document.getElementById('libMacGrid');
+  const addRow = document.getElementById('libMacAddRow');
+  if (!grid) return;
+  grid.innerHTML = '';
+  _libEditingMacchinari.forEach((name, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'lib-video-tile';
+    tile.innerHTML = '<div class="lib-video-tile-play">🔧</div><div class="lib-video-tile-title">' + escapeHtml(name) + '</div><button class="lib-video-del" onclick="libRemoveMacchinario(' + i + ')" title="Rimuovi">&#x2715;</button>';
+    grid.appendChild(tile);
+  });
+  if (addRow) addRow.style.display = 'flex';
+}
+
+async function libAddMacchinario() {
+  if (!fbDb || !fbUser) { showNotif('Accedi per usare la rubrica'); return; }
+  // Carica lista macchinari del coach
+  try {
+    const qs = await fbDb.collection('machineryLibrary').where('ownerId','==',fbUser.uid).get();
+    if (qs.empty) { showNotif('Nessun macchinario in rubrica — aggiungilo prima dalla tab Macchinari'); return; }
+    const names = [];
+    qs.forEach(doc => names.push(doc.data().name));
+    names.sort((a,b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    const list = names.map((n,i) => (i+1) + '. ' + n).join('\n');
+    const input = window.prompt('Scegli il numero del macchinario:\n\n' + list);
+    if (!input) return;
+    const idx = parseInt(input) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= names.length) { showNotif('Numero non valido'); return; }
+    const chosen = names[idx];
+    if (!_libEditingMacchinari.includes(chosen)) {
+      _libEditingMacchinari.push(chosen);
+      libRenderMacForm();
+    } else {
+      showNotif('Macchinario già associato');
+    }
+  } catch(e) {
+    showNotif('Errore: ' + (e && e.message || ''));
+  }
+}
+
+function libRemoveMacchinario(idx) {
+  _libEditingMacchinari.splice(idx, 1);
+  libRenderMacForm();
+}
+
+// ---- Atleta: pulsante macchinari nell'esercizio ----
+const _macCache = {};
+
+async function renderMacchinariBtn(exId, exName) {
+  const container = document.getElementById('spieg_btn_' + exId);
+  if (!container) return;
+  if (!CLOUD_ENABLED || !fbDb || !fbUser || !fbUserDoc) return;
+  if (fbUserDoc.role !== 'athlete') return;
+  const coachId = fbUserDoc.coachId;
+  if (!coachId) return;
+  const nameLower = (exName || '').toLowerCase().trim();
+  if (!nameLower) return;
+  if (_macCache[nameLower] !== undefined) {
+    if (_macCache[nameLower] && _macCache[nameLower].found) _renderMacchinariButton(container, exName, _macCache[nameLower].data);
+    return;
+  }
+  try {
+    const qs = await fbDb.collection('exerciseLibrary')
+      .where('ownerId','==', coachId)
+      .where('nameLower','==', nameLower)
+      .get();
+    if (!qs.empty) {
+      const ex = qs.docs[0].data();
+      const macchinari = ex.macchinari || [];
+      if (macchinari.length) {
+        // Carica dettagli macchinari dalla rubrica
+        const macDocs = [];
+        for (const mName of macchinari) {
+          try {
+            const mqs = await fbDb.collection('machineryLibrary')
+              .where('ownerId','==', coachId)
+              .where('nameLower','==', mName.toLowerCase())
+              .get();
+            if (!mqs.empty) macDocs.push({name: mName, ...mqs.docs[0].data()});
+          } catch(e) {}
+        }
+        if (macDocs.length) {
+          _macCache[nameLower] = {found: true, data: macDocs};
+          _renderMacchinariButton(container, exName, macDocs);
+          return;
+        }
+      }
+    }
+    _macCache[nameLower] = {found: false, data: null};
+  } catch(e) {}
+}
+
+function _renderMacchinariButton(container, exName, macDocs) {
+  if (!macDocs || !macDocs.length) return;
+  if (container.querySelector('.btn-macchinari')) return;
+  const btn = document.createElement('button');
+  btn.className = 'btn-spiegazione btn-macchinari';
+  btn.innerHTML = '🔧 Macchinari';
+  btn.style.marginBottom = '10px';
+  btn.onclick = () => openMacModal(exName, macDocs);
+  container.appendChild(btn);
+}
+
+function openMacModal(exName, macDocs) {
+  document.getElementById('macModalName').textContent = (exName || '').toUpperCase();
+  document.getElementById('macModalSub').textContent = macDocs.length + (macDocs.length === 1 ? ' macchinario' : ' macchinari');
+  const list = document.getElementById('macModalList');
+  list.innerHTML = '';
+  macDocs.forEach(m => {
+    const item = document.createElement('div');
+    item.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;';
+    let photosHtml = '';
+    if (m.photos && m.photos.length) {
+      photosHtml = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">' +
+        m.photos.map(p => {
+          const url = typeof p === 'string' ? p : p.url;
+          const caption = typeof p === 'string' ? '' : (p.caption || '');
+          return '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener" style="display:flex;flex-direction:column;align-items:center;gap:4px;text-decoration:none;color:var(--muted2);font-size:11px">' +
+            '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(caption) + '" style="width:120px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display=\'none\'">' +
+            (caption ? '<span>' + escapeHtml(caption) + '</span>' : '') +
+            '</a>';
+        }).join('') +
+        '</div>';
+    }
+    item.innerHTML =
+      '<div style="font-weight:600;font-size:14px;color:var(--text)">' + escapeHtml(m.name) + '</div>' +
+      (m.description ? '<div style="font-size:12px;color:var(--muted2);margin-top:4px">' + escapeHtml(m.description) + '</div>' : '') +
+      photosHtml;
+    list.appendChild(item);
+  });
+  document.getElementById('macModal').style.display = 'flex';
+}
+
+function closeMacModal() {
+  document.getElementById('macModal').style.display = 'none';
 }
 
 /* renderAccountCard e saveCoachId spostati in Step 4 */
@@ -4732,6 +5136,15 @@ async function showWelcome(userName, isFirst){
 /* ============================================================
    INIT
    ============================================================ */
+// ---- PWA: registrazione Service Worker ----
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('SW registrato'))
+      .catch(e => console.warn('SW non registrato:', e));
+  });
+}
+
 window.addEventListener('DOMContentLoaded',async()=>{
   initTheme();
 
@@ -4748,8 +5161,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
     storageMode='Firebase (cloud) + cache offline';
     const sm=document.getElementById('storageMode'); if(sm)sm.textContent=storageMode;
     await openDB();
-    // Forza logout ad ogni apertura — così scegli sempre l'account da usare
-    try{ await fbAuth.signOut(); }catch(e){}
+    // Sessione persistente — Firebase mantiene l'utente loggato automaticamente
     fbAuth.onAuthStateChanged(async(user)=>{
       fbUser=user;
       if(!user){
@@ -5175,6 +5587,7 @@ function renderExercises(){
     renderSets(ex.id);
     renderVideoZone(ex.id);
     renderSpiegazioneBtn(ex.id, ex.name);
+    renderMacchinariBtn(ex.id, ex.name);
   });
 }
 function feelEmoji(n){return n===1?'💀':n===2?'😤':n===3?'😐':n===4?'💪':'🔥';}
