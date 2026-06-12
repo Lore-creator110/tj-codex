@@ -2,7 +2,7 @@
   "name": "TJ Codex",
   "short_name": "TJ Codex",
   "description": "Training Journal per atleti e coach",
-  "start_url": "./tj_codex_v1beta.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d0d0d",
