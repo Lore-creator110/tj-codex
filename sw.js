@@ -2,7 +2,7 @@ const CACHE_NAME = 'tj-codex-v1';
 
 // File da cachare per funzionamento offline
 const STATIC_ASSETS = [
-  './tj_codex_v1beta.html',
+  './index.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
