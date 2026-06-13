@@ -5240,7 +5240,9 @@ function calRender() {
       daySessions.forEach(s => {
         const pill = document.createElement('div');
         pill.className = 'cal-pill ' + (s.type === 'group' ? 'group' : (s.status === 'proposed' ? 'proposed' : 'confirmed'));
-        const name = s.type === 'group' ? (s.groupName || 'Gruppo') : (s.atletaName || '1:1');
+        const name = s.type === 'group'
+        ? (s.groupName || (s.atletiNames && s.atletiNames.length ? s.atletiNames.join(', ') : 'Gruppo'))
+        : (s.atletaName || '1:1');
         pill.textContent = (calFormatTime(s.timeStart) ? calFormatTime(s.timeStart) + ' ' : '') + name;
         pill.title = name;
         cell.appendChild(pill);
@@ -5312,7 +5314,9 @@ function _calRenderExpand(dateStr, row) {
   if (daySessions.length) {
     html += '<div class="cal-session-list-inline">';
     daySessions.forEach(s => {
-      const name = s.type === 'group' ? (s.groupName || 'Sessione di gruppo') : (s.atletaName || '1:1');
+      const name = s.type === 'group'
+      ? (s.groupName || (s.atletiNames && s.atletiNames.length ? s.atletiNames.join(', ') : 'Sessione di gruppo'))
+      : (s.atletaName || '1:1');
       const timeStr = calFormatTime(s.timeStart) + (s.timeEnd ? ' – ' + calFormatTime(s.timeEnd) : '');
       html += '<div class="cal-session-inline ' + (s.status === 'proposed' ? 'proposed' : '') + '">' +
         '<div class="cal-session-inline-info">' +
@@ -5345,8 +5349,12 @@ function _calRenderExpand(dateStr, row) {
         '</select></div>' +
       '<div id="calInlineAtletaWrap"><span class="mini-label">Atleta</span>' +
         '<select class="inp" id="calInlineAtleta" style="font-size:12px"></select></div>' +
-      '<div id="calInlineGruppoWrap" style="display:none"><span class="mini-label">Nome gruppo</span>' +
+      '<div id="calInlineGruppoWrap" style="display:none">' +
+        '<span class="mini-label">Atleti del gruppo</span>' +
+        '<div id="calInlineAtletiGruppo" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;max-height:140px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px"></div>' +
+        '<div style="margin-top:8px"><span class="mini-label">Nome sessione (opzionale)</span>' +
         '<input class="inp" id="calInlineGruppo" placeholder="es. Check-in gruppo A" style="font-size:12px" value="' + escapeHtml(editing && editing.type==='group' ? editing.groupName||'' : '') + '"></div>' +
+      '</div>' +
     '</div>' +
     '<div class="cal-form-row">' +
       '<div><span class="mini-label">Ora inizio</span><input class="inp" type="time" id="calInlineStart" value="' + (editing ? editing.timeStart||'' : '') + '" style="font-size:12px"></div>' +
@@ -5379,6 +5387,28 @@ function calInlineTypeChange() {
   const gruppoWrap = document.getElementById('calInlineGruppoWrap');
   if (atletaWrap) atletaWrap.style.display = type === '1on1' ? '' : 'none';
   if (gruppoWrap) gruppoWrap.style.display = type === 'group' ? '' : 'none';
+  if (type === 'group') {
+    const container = document.getElementById('calInlineAtletiGruppo');
+    if (!container) return;
+    container.innerHTML = '';
+    const athletes = window._coachAthletes || [];
+    if (!athletes.length) {
+      container.innerHTML = '<div style="font-size:12px;color:var(--muted2)">Nessun atleta collegato</div>';
+      return;
+    }
+    // Recupera atleti già selezionati se stiamo modificando
+    const editing = _calEditingId ? _calSessions.find(s => s.id === _calEditingId) : null;
+    const selectedIds = editing && editing.atletiIds ? editing.atletiIds : [];
+    athletes.forEach(a => {
+      const id = a.uid;
+      const name = a.displayName || a.name || a.email || id;
+      const checked = selectedIds.includes(id) ? 'checked' : '';
+      const row = document.createElement('label');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text)';
+      row.innerHTML = '<input type="checkbox" id="calChk_' + id + '" value="' + id + '" ' + checked + ' style="accent-color:var(--accent);width:14px;height:14px"><span>' + escapeHtml(name) + '</span>';
+      container.appendChild(row);
+    });
+  }
 }
 
 function calCloseExpand() {
@@ -5422,17 +5452,26 @@ function _calGetCells() {
 async function calSaveInline(dateStr) {
   if (!CLOUD_ENABLED || !fbDb || !fbUser) return;
   const type = document.getElementById('calInlineType')?.value || '1on1';
-  let atletaId = '', atletaName = '', groupName = '';
+  let atletaId = '', atletaName = '', groupName = '', atletiIds = [], atletiNames = [];
   if (type === '1on1') {
     const sel = document.getElementById('calInlineAtleta');
     atletaId = sel?.value || '';
     atletaName = sel?.selectedOptions[0]?.textContent || '';
   } else {
     groupName = document.getElementById('calInlineGruppo')?.value.trim() || 'Sessione di gruppo';
+    // Raccogli atleti selezionati dai checkbox
+    const container = document.getElementById('calInlineAtletiGruppo');
+    if (container) {
+      container.querySelectorAll('input[type="checkbox"]:checked').forEach(chk => {
+        atletiIds.push(chk.value);
+        const label = chk.parentElement?.querySelector('span')?.textContent || chk.value;
+        atletiNames.push(label);
+      });
+    }
   }
   const data = {
     coachId: fbUser.uid,
-    type, atletaId, atletaName, groupName,
+    type, atletaId, atletaName, groupName, atletiIds, atletiNames,
     date: dateStr,
     timeStart: document.getElementById('calInlineStart')?.value || '',
     timeEnd: document.getElementById('calInlineEnd')?.value || '',
@@ -5493,7 +5532,7 @@ async function athlCalLoad() {
     _athlCalSessions = [];
     qs.forEach(doc => {
       const s = {id: doc.id, ...doc.data()};
-      if (s.type === 'group' || s.atletaId === fbUser.uid) _athlCalSessions.push(s);
+      if (s.type === 'group' || s.atletaId === fbUser.uid || (s.atletiIds && s.atletiIds.includes(fbUser.uid))) _athlCalSessions.push(s);
     });
     athlCalRender();
     athlCalRenderList();
