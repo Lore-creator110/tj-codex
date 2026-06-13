@@ -261,6 +261,40 @@
 
   /* Modal spiegazione (atleta) */
   .spieg-modal-back{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center;z-index:3000;padding:0;}
+
+  /* ---- CALENDARIO ---- */
+  .cal-day-header{text-align:center;font-size:10px;font-family:var(--font-mono);color:var(--muted2);padding:6px 0;text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border);}
+  .cal-grid-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+  .cal-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:72px;padding:6px;cursor:pointer;transition:background .12s;position:relative;display:flex;flex-direction:column;gap:3px;}
+  .cal-cell:nth-child(7n){border-right:none;}
+  .cal-cell:hover{background:var(--surface2);}
+  .cal-cell.today .cal-cell-num{background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;}
+  .cal-cell.other-month{opacity:.35;pointer-events:none;}
+  .cal-cell-num{font-family:var(--font-mono);font-size:11px;color:var(--muted2);width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .cal-cell.today .cal-cell-num{color:#fff;}
+  .cal-pill{font-size:9px;font-family:var(--font-mono);padding:2px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer;}
+  .cal-pill.confirmed{background:rgba(90,185,135,.18);color:var(--good);border:1px solid rgba(90,185,135,.3);}
+  .cal-pill.proposed{background:rgba(212,69,94,.12);color:var(--accent2);border:1px solid rgba(212,69,94,.3);}
+  .cal-pill.group{background:rgba(196,30,58,.15);color:var(--accent);border:1px solid rgba(196,30,58,.25);}
+  /* Espansione inline */
+  .cal-expand{grid-column:1/-1;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px;display:none;}
+  .cal-expand.open{display:block;}
+  .cal-expand-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .cal-expand-title{font-family:var(--font-serif);font-size:15px;color:var(--accent);font-weight:600;}
+  .cal-session-list-inline{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  .cal-session-inline{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .cal-session-inline.proposed{border-color:rgba(212,69,94,.35);}
+  .cal-session-inline-info{flex:1;min-width:0;}
+  .cal-session-inline-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cal-session-inline-meta{font-size:11px;font-family:var(--font-mono);color:var(--muted2);margin-top:2px;}
+  .cal-add-form{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:8px;}
+  .cal-form-row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .cal-form-row > *{flex:1;min-width:120px;}
+  .cal-session-badge{display:inline-block;font-size:10px;font-family:var(--font-mono);padding:2px 7px;border-radius:10px;letter-spacing:.5px;}
+  .cal-session-badge.confirmed{background:rgba(90,185,135,.15);color:var(--good);}
+  .cal-session-badge.proposed{background:rgba(212,69,94,.12);color:var(--accent2);}
+  .cal-session-badge.group{background:rgba(196,30,58,.15);color:var(--accent);}
   .spieg-modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;padding:20px 20px 32px;}
   .spieg-modal h4{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--accent2);margin-bottom:4px;}
   .spieg-modal-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.5px;margin-bottom:16px;}
@@ -1919,6 +1953,10 @@
           <span class="coach-nav-icon">🔧</span>
           <span class="coach-nav-label">Macchinari</span>
         </div>
+        <div class="coach-nav-item" id="cnav-calendario" onclick="switchCoachTab('calendario')">
+          <span class="coach-nav-icon">📅</span>
+          <span class="coach-nav-label">Calendario</span>
+        </div>
       </div>
       <div class="coach-sidebar-bottom">
         <div class="coach-nav-item" id="cnav-account" onclick="switchCoachTab('account')">
@@ -2108,6 +2146,29 @@
         </div>
       </div>
 
+      <!-- ====== SEZIONE: CALENDARIO ====== -->
+      <div id="cpane-calendario" class="coach-tab-pane">
+        <div class="coach-page-header">
+          <div>
+            <div class="coach-page-title">Calendario</div>
+            <div class="coach-page-subtitle">Sessioni di coaching con i tuoi atleti</div>
+          </div>
+        </div>
+
+        <!-- Navigazione mese -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <button class="btn" style="padding:6px 14px;font-size:15px" onclick="calPrevMonth()">‹</button>
+          <div id="calMonthLabel" style="font-family:var(--font-serif);font-size:17px;font-weight:600;color:var(--text);flex:1;text-align:center"></div>
+          <button class="btn" style="padding:6px 14px;font-size:15px" onclick="calNextMonth()">›</button>
+        </div>
+
+        <!-- Griglia calendario con espansione inline -->
+        <div class="cal-grid-wrap">
+          <div class="cal-grid" id="calHeaders"></div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+      </div>
+
       <!-- ====== SEZIONE: RICHIESTE (Step 4) ====== -->
       <div id="cpane-requests" class="coach-tab-pane">
         <div class="coach-page-header">
@@ -2251,6 +2312,7 @@
   <button class="tab active" onclick="showPage('log')">🏋️ Allenamento</button>
   <button class="tab" onclick="showPage('progress')">📈 Progressi</button>
   <button class="tab" onclick="showPage('history')">📋 Storico</button>
+  <button class="tab" onclick="showPage('calendario')">📅 Calendario</button>
   <button class="tab hide-ro" onclick="showPage('editor')">✏️ Editor</button>
   <button class="tab" onclick="showPage('settings')">⚙️ Impostazioni</button>
 </div>
@@ -2367,6 +2429,44 @@
   <div id="page-history" class="page">
     <div class="section-title">Storico sessioni</div>
     <div id="historyContainer"></div>
+  </div>
+
+  <!-- CALENDARIO ATLETA -->
+  <div id="page-calendario" class="page">
+    <div class="section-title">Calendario Coaching</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <button class="btn" style="padding:6px 12px;font-size:13px" onclick="athlCalPrevMonth()">‹</button>
+    <div id="athlCalMonthLabel" style="font-family:var(--font-serif);font-size:16px;font-weight:600;color:var(--text);flex:1;text-align:center"></div>
+      <button class="btn" style="padding:6px 12px;font-size:13px" onclick="athlCalNextMonth()">›</button>
+    </div>
+    <div class="cal-grid-wrap" style="margin-bottom:16px">
+      <div class="cal-grid" id="athlCalGrid"></div>
+    </div>
+    <div id="athlCalSessionList" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <div class="section-title" style="margin-bottom:12px">Proponi una data</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <span class="mini-label">Data</span>
+          <input class="inp" type="date" id="athlPropDate">
+        </div>
+        <div style="display:flex;gap:10px">
+          <div style="flex:1">
+            <span class="mini-label">Ora inizio</span>
+            <input class="inp" type="time" id="athlPropTimeStart">
+          </div>
+          <div style="flex:1">
+            <span class="mini-label">Ora fine</span>
+            <input class="inp" type="time" id="athlPropTimeEnd">
+          </div>
+        </div>
+        <div>
+          <span class="mini-label">Note (opzionale)</span>
+          <textarea class="notes-ta" id="athlPropNotes" rows="2" placeholder="Argomenti che vuoi trattare…"></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="athlProposeSession()">Invia proposta al coach</button>
+      </div>
+    </div>
   </div>
 
   <!-- EDITOR -->
@@ -3705,7 +3805,7 @@ async function authSubmit(){
 /* ---- switchCoachTab aggiornato per richieste ---- */
 const _origSwitchCoachTab = switchCoachTab;
 switchCoachTab = function(tab){
-  ['atleti','requests','libreria','macchinari','account'].forEach(t => {
+  ['atleti','requests','libreria','macchinari','calendario','account'].forEach(t => {
     const pane = document.getElementById('cpane-' + t);
     if(pane) pane.classList.toggle('active', t === tab);
     const nav = document.getElementById('cnav-' + t);
@@ -3713,6 +3813,7 @@ switchCoachTab = function(tab){
   });
   if(tab === 'libreria') libLoad();
   if(tab === 'macchinari') macLoad();
+  if(tab === 'calendario') calLoad();
   if(tab === 'account')  renderCoachAccountTab();
   if(tab === 'requests') loadPendingRequests();
   const mc = document.getElementById('coachMainContent');
@@ -4331,7 +4432,7 @@ const LIB_MAX_VIDEOS = 5;
 
 function switchCoachTab(tab) {
   // Aggiorna pane attivo
-  ['atleti','libreria','macchinari','account'].forEach(t => {
+  ['atleti','libreria','macchinari','calendario','account'].forEach(t => {
     const pane = document.getElementById('cpane-'+t);
     if(pane) pane.classList.toggle('active', t===tab);
     const nav = document.getElementById('cnav-'+t);
@@ -4339,6 +4440,7 @@ function switchCoachTab(tab) {
   });
   if(tab==='libreria') libLoad();
   if(tab==='macchinari') macLoad();
+  if(tab==='calendario') calLoad();
   if(tab==='account')  renderCoachAccountTab();
   const mc = document.getElementById('coachMainContent');
   if(mc) mc.scrollTop = 0;
@@ -5019,6 +5121,493 @@ function closeMacModal() {
   document.getElementById('macModal').style.display = 'none';
 }
 
+/* ============================================================
+   CALENDARIO COACHING — Coach (CRUD inline) + Atleta (proposta/vista)
+   ============================================================ */
+
+let _calYear = new Date().getFullYear();
+let _calMonth = new Date().getMonth();
+let _calSessions = [];
+let _calOpenDate = null; // data cella aperta
+let _calEditingId = null; // id sessione in modifica
+let _athlCalYear = new Date().getFullYear();
+let _athlCalMonth = new Date().getMonth();
+let _athlCalSessions = [];
+
+const CAL_DAYS = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+const CAL_MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+function calFormatTime(t) { return t ? t.slice(0,5) : ''; }
+function calFormatDate(d) {
+  if (!d) return '';
+  const [y,m,day] = d.split('-');
+  return day + '/' + m + '/' + y;
+}
+
+// ---- Coach: carica sessioni ----
+async function calLoad() {
+  if (!CLOUD_ENABLED || !fbDb || !fbUser) return;
+  try {
+    const qs = await fbDb.collection('coachingSessions').where('coachId','==', fbUser.uid).get();
+    _calSessions = [];
+    qs.forEach(doc => _calSessions.push({id: doc.id, ...doc.data()}));
+    calRender();
+  } catch(e) { console.error('calLoad:', e); }
+}
+
+// ---- Coach: popola select atleti nel form inline ----
+function calPopulateAthletes(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = '';
+  if (window._coachAthletes && window._coachAthletes.length) {
+    window._coachAthletes.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.uid;
+      opt.textContent = a.displayName || a.name || a.email || a.uid;
+      sel.appendChild(opt);
+    });
+  } else {
+    sel.innerHTML = '<option value="">Nessun atleta</option>';
+  }
+}
+
+// ---- Coach: render griglia ----
+function calRender() {
+  const label = document.getElementById('calMonthLabel');
+  const headers = document.getElementById('calHeaders');
+  const grid = document.getElementById('calGrid');
+  if (!label || !grid || !headers) return;
+
+  label.textContent = CAL_MONTHS[_calMonth] + ' ' + _calYear;
+
+  // Intestazioni
+  headers.innerHTML = '';
+  CAL_DAYS.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'cal-day-header';
+    h.textContent = d;
+    headers.appendChild(h);
+  });
+
+  grid.innerHTML = '';
+
+  const firstDay = new Date(_calYear, _calMonth, 1);
+  const lastDay = new Date(_calYear, _calMonth + 1, 0);
+  let startDow = firstDay.getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
+
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+  const totalDays = startDow + lastDay.getDate();
+  const totalRows = Math.ceil(totalDays / 7);
+
+  // Costruiamo tutte le celle
+  const cells = [];
+
+  // Giorni mese precedente
+  for (let i = 0; i < startDow; i++) {
+    const d = new Date(_calYear, _calMonth, -(startDow - i - 1));
+    cells.push({date: d, otherMonth: true});
+  }
+  // Giorni mese corrente
+  for (let i = 1; i <= lastDay.getDate(); i++) {
+    cells.push({date: new Date(_calYear, _calMonth, i), otherMonth: false});
+  }
+  // Giorni mese successivo
+  const remaining = cells.length % 7 === 0 ? 0 : 7 - (cells.length % 7);
+  for (let i = 1; i <= remaining; i++) {
+    cells.push({date: new Date(_calYear, _calMonth + 1, i), otherMonth: true});
+  }
+
+  // Render per righe — dopo ogni riga aggiungiamo eventuale expand
+  for (let row = 0; row < totalRows; row++) {
+    const rowCells = cells.slice(row * 7, row * 7 + 7);
+
+    rowCells.forEach(({date, otherMonth}) => {
+      const dateStr = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+      const daySessions = _calSessions.filter(s => s.date === dateStr);
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell' + (otherMonth ? ' other-month' : '') + (dateStr === todayStr ? ' today' : '');
+      cell.dataset.date = dateStr;
+
+      const numEl = document.createElement('div');
+      numEl.className = 'cal-cell-num';
+      numEl.textContent = date.getDate();
+      cell.appendChild(numEl);
+
+      daySessions.forEach(s => {
+        const pill = document.createElement('div');
+        pill.className = 'cal-pill ' + (s.type === 'group' ? 'group' : (s.status === 'proposed' ? 'proposed' : 'confirmed'));
+        const name = s.type === 'group' ? (s.groupName || 'Gruppo') : (s.atletaName || '1:1');
+        pill.textContent = (calFormatTime(s.timeStart) ? calFormatTime(s.timeStart) + ' ' : '') + name;
+        pill.title = name;
+        cell.appendChild(pill);
+      });
+
+      if (!otherMonth) {
+        cell.onclick = () => calToggleExpand(dateStr, row);
+      }
+      grid.appendChild(cell);
+    });
+
+    // Expand row — sempre presente ma nascosta
+    const expand = document.createElement('div');
+    expand.className = 'cal-expand';
+    expand.id = 'cal-expand-row-' + row;
+    expand.dataset.row = row;
+    grid.appendChild(expand);
+  }
+
+  // Se c'era una data aperta, riaprila
+  if (_calOpenDate) {
+    const rowIdx = _calGetRowForDate(_calOpenDate, cells);
+    if (rowIdx >= 0) _calRenderExpand(_calOpenDate, rowIdx);
+  }
+}
+
+function _calGetRowForDate(dateStr, cells) {
+  const idx = cells.findIndex(c => {
+    const d = c.date;
+    const ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    return ds === dateStr;
+  });
+  return idx < 0 ? -1 : Math.floor(idx / 7);
+}
+
+// ---- Toggle expand ----
+function calToggleExpand(dateStr, row) {
+  // Chiudi tutte le expand
+  document.querySelectorAll('.cal-expand').forEach(e => {
+    e.classList.remove('open');
+    e.innerHTML = '';
+  });
+
+  if (_calOpenDate === dateStr) {
+    _calOpenDate = null;
+    _calEditingId = null;
+    return;
+  }
+  _calOpenDate = dateStr;
+  _calEditingId = null;
+  _calRenderExpand(dateStr, row);
+}
+
+// ---- Render espansione inline ----
+function _calRenderExpand(dateStr, row) {
+  const expand = document.getElementById('cal-expand-row-' + row);
+  if (!expand) return;
+  expand.classList.add('open');
+
+  const daySessions = _calSessions.filter(s => s.date === dateStr);
+  const displayDate = calFormatDate(dateStr);
+
+  let html = '<div class="cal-expand-header">' +
+    '<div class="cal-expand-title">📅 ' + displayDate + '</div>' +
+    '<button class="btn" style="font-size:11px;padding:4px 10px" onclick="calCloseExpand()">✕</button>' +
+  '</div>';
+
+  // Lista sessioni esistenti
+  if (daySessions.length) {
+    html += '<div class="cal-session-list-inline">';
+    daySessions.forEach(s => {
+      const name = s.type === 'group' ? (s.groupName || 'Sessione di gruppo') : (s.atletaName || '1:1');
+      const timeStr = calFormatTime(s.timeStart) + (s.timeEnd ? ' – ' + calFormatTime(s.timeEnd) : '');
+      html += '<div class="cal-session-inline ' + (s.status === 'proposed' ? 'proposed' : '') + '">' +
+        '<div class="cal-session-inline-info">' +
+          '<div class="cal-session-inline-name">' + escapeHtml(name) + '</div>' +
+          '<div class="cal-session-inline-meta">' +
+            (s.type === 'group' ? '👥 Gruppo  ' : '👤 1:1  ') +
+            (timeStr ? '⏰ ' + timeStr + '  ' : '') +
+            (s.notes ? '📝 ' + escapeHtml(s.notes.slice(0,40)) : '') +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;flex-shrink:0">' +
+          (s.status === 'proposed' ? '<button class="btn" style="font-size:11px;padding:3px 8px;color:var(--good);border-color:var(--good)" onclick="calConfirmSession(\'' + s.id + '\')">✓</button>' : '') +
+          '<button class="btn" style="font-size:11px;padding:3px 8px" onclick="calInlineEdit(\'' + s.id + '\')">✏️</button>' +
+          '<button class="btn" style="font-size:11px;padding:3px 8px;color:var(--red)" onclick="calDeleteSession(\'' + s.id + '\')">🗑️</button>' +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Form aggiungi / modifica
+  const editing = _calEditingId ? _calSessions.find(s => s.id === _calEditingId) : null;
+  html += '<div class="cal-add-form" id="calAddForm">' +
+    '<div style="font-size:11px;font-family:var(--font-mono);color:var(--accent);margin-bottom:10px;letter-spacing:.5px">' + (editing ? 'MODIFICA SESSIONE' : '+ NUOVA SESSIONE') + '</div>' +
+    '<div class="cal-form-row">' +
+      '<div><span class="mini-label">Tipo</span>' +
+        '<select class="inp" id="calInlineType" onchange="calInlineTypeChange()" style="font-size:12px">' +
+          '<option value="1on1"' + (!editing || editing.type==='1on1' ? ' selected' : '') + '>1:1</option>' +
+          '<option value="group"' + (editing && editing.type==='group' ? ' selected' : '') + '>Gruppo</option>' +
+        '</select></div>' +
+      '<div id="calInlineAtletaWrap"><span class="mini-label">Atleta</span>' +
+        '<select class="inp" id="calInlineAtleta" style="font-size:12px"></select></div>' +
+      '<div id="calInlineGruppoWrap" style="display:none"><span class="mini-label">Nome gruppo</span>' +
+        '<input class="inp" id="calInlineGruppo" placeholder="es. Check-in gruppo A" style="font-size:12px" value="' + escapeHtml(editing && editing.type==='group' ? editing.groupName||'' : '') + '"></div>' +
+    '</div>' +
+    '<div class="cal-form-row">' +
+      '<div><span class="mini-label">Ora inizio</span><input class="inp" type="time" id="calInlineStart" value="' + (editing ? editing.timeStart||'' : '') + '" style="font-size:12px"></div>' +
+      '<div><span class="mini-label">Ora fine</span><input class="inp" type="time" id="calInlineEnd" value="' + (editing ? editing.timeEnd||'' : '') + '" style="font-size:12px"></div>' +
+    '</div>' +
+    '<div style="margin-bottom:10px"><span class="mini-label">Su cosa si lavora (note)</span>' +
+      '<textarea class="notes-ta" id="calInlineNotes" rows="2" placeholder="es. Petto e tricipiti, check peso, revisione dieta…" style="font-size:12px">' + escapeHtml(editing ? editing.notes||'' : '') + '</textarea></div>' +
+    '<div class="btn-row">' +
+      (editing ? '<button class="btn" style="font-size:12px" onclick="calCancelInlineEdit()">Annulla</button>' : '') +
+      '<button class="btn btn-primary" style="font-size:12px" onclick="calSaveInline('' + dateStr + '')">' + (editing ? 'Aggiorna' : 'Salva sessione') + '</button>' +
+    '</div>' +
+  '</div>';
+
+  expand.innerHTML = html;
+
+  // Popola select atleti
+  calPopulateAthletes('calInlineAtleta');
+  if (editing && editing.type === '1on1' && editing.atletaId) {
+    setTimeout(() => {
+      const sel = document.getElementById('calInlineAtleta');
+      if (sel) sel.value = editing.atletaId;
+    }, 50);
+  }
+  calInlineTypeChange();
+}
+
+function calInlineTypeChange() {
+  const type = document.getElementById('calInlineType')?.value;
+  const atletaWrap = document.getElementById('calInlineAtletaWrap');
+  const gruppoWrap = document.getElementById('calInlineGruppoWrap');
+  if (atletaWrap) atletaWrap.style.display = type === '1on1' ? '' : 'none';
+  if (gruppoWrap) gruppoWrap.style.display = type === 'group' ? '' : 'none';
+}
+
+function calCloseExpand() {
+  _calOpenDate = null;
+  _calEditingId = null;
+  document.querySelectorAll('.cal-expand').forEach(e => { e.classList.remove('open'); e.innerHTML = ''; });
+}
+
+function calInlineEdit(id) {
+  _calEditingId = id;
+  const s = _calSessions.find(s => s.id === id);
+  if (!s) return;
+  // Trova la riga della data
+  const cells = _calGetCells();
+  const rowIdx = _calGetRowForDate(s.date, cells);
+  _calOpenDate = s.date;
+  _calRenderExpand(s.date, rowIdx);
+}
+
+function calCancelInlineEdit() {
+  _calEditingId = null;
+  const cells = _calGetCells();
+  const rowIdx = _calGetRowForDate(_calOpenDate, cells);
+  _calRenderExpand(_calOpenDate, rowIdx);
+}
+
+function _calGetCells() {
+  const firstDay = new Date(_calYear, _calMonth, 1);
+  const lastDay = new Date(_calYear, _calMonth + 1, 0);
+  let startDow = firstDay.getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
+  const cells = [];
+  for (let i = 0; i < startDow; i++) cells.push({date: new Date(_calYear, _calMonth, -(startDow - i - 1)), otherMonth: true});
+  for (let i = 1; i <= lastDay.getDate(); i++) cells.push({date: new Date(_calYear, _calMonth, i), otherMonth: false});
+  const remaining = cells.length % 7 === 0 ? 0 : 7 - (cells.length % 7);
+  for (let i = 1; i <= remaining; i++) cells.push({date: new Date(_calYear, _calMonth + 1, i), otherMonth: true});
+  return cells;
+}
+
+// ---- Coach: salva sessione inline ----
+async function calSaveInline(dateStr) {
+  if (!CLOUD_ENABLED || !fbDb || !fbUser) return;
+  const type = document.getElementById('calInlineType')?.value || '1on1';
+  let atletaId = '', atletaName = '', groupName = '';
+  if (type === '1on1') {
+    const sel = document.getElementById('calInlineAtleta');
+    atletaId = sel?.value || '';
+    atletaName = sel?.selectedOptions[0]?.textContent || '';
+  } else {
+    groupName = document.getElementById('calInlineGruppo')?.value.trim() || 'Sessione di gruppo';
+  }
+  const data = {
+    coachId: fbUser.uid,
+    type, atletaId, atletaName, groupName,
+    date: dateStr,
+    timeStart: document.getElementById('calInlineStart')?.value || '',
+    timeEnd: document.getElementById('calInlineEnd')?.value || '',
+    notes: document.getElementById('calInlineNotes')?.value.trim() || '',
+    status: 'confirmed',
+    updatedAt: Date.now(),
+  };
+  try {
+    if (_calEditingId) {
+      await fbDb.collection('coachingSessions').doc(_calEditingId).update(data);
+      showNotif('Sessione aggiornata');
+    } else {
+      data.createdAt = Date.now();
+      await fbDb.collection('coachingSessions').add(data);
+      showNotif('✅ Sessione aggiunta');
+    }
+    _calEditingId = null;
+    await calLoad();
+  } catch(e) { showNotif('Errore: ' + (e && e.message || '')); }
+}
+
+// ---- Coach: conferma proposta ----
+async function calConfirmSession(id) {
+  if (!fbDb) return;
+  try {
+    await fbDb.collection('coachingSessions').doc(id).update({status: 'confirmed', updatedAt: Date.now()});
+    showNotif('Sessione confermata');
+    await calLoad();
+  } catch(e) { showNotif('Errore: ' + (e && e.message || '')); }
+}
+
+// ---- Coach: elimina sessione ----
+async function calDeleteSession(id) {
+  if (!(await appConfirm('Eliminare questa sessione?', true))) return;
+  try {
+    await fbDb.collection('coachingSessions').doc(id).delete();
+    showNotif('Sessione eliminata');
+    _calEditingId = null;
+    await calLoad();
+  } catch(e) { showNotif('Errore: ' + (e && e.message || '')); }
+}
+
+// ---- Coach: navigazione mese ----
+function calPrevMonth() { _calOpenDate=null; _calEditingId=null; _calMonth--; if(_calMonth<0){_calMonth=11;_calYear--;} calLoad(); }
+function calNextMonth() { _calOpenDate=null; _calEditingId=null; _calMonth++; if(_calMonth>11){_calMonth=0;_calYear++;} calLoad(); }
+
+// ---- Atleta: carica sessioni ----
+async function athlCalLoad() {
+  if (!CLOUD_ENABLED || !fbDb || !fbUser || !fbUserDoc) return;
+  const coachId = fbUserDoc.coachId;
+  if (!coachId) {
+    const list = document.getElementById('athlCalSessionList');
+    if (list) list.innerHTML = '<div style="color:var(--muted2);font-size:13px;text-align:center;padding:20px">Nessun coach collegato</div>';
+    return;
+  }
+  try {
+    const qs = await fbDb.collection('coachingSessions').where('coachId','==', coachId).get();
+    _athlCalSessions = [];
+    qs.forEach(doc => {
+      const s = {id: doc.id, ...doc.data()};
+      if (s.type === 'group' || s.atletaId === fbUser.uid) _athlCalSessions.push(s);
+    });
+    athlCalRender();
+    athlCalRenderList();
+  } catch(e) { console.error('athlCalLoad:', e); }
+}
+
+function athlCalRender() {
+  const label = document.getElementById('athlCalMonthLabel');
+  const grid = document.getElementById('athlCalGrid');
+  if (!label || !grid) return;
+  label.textContent = CAL_MONTHS[_athlCalMonth] + ' ' + _athlCalYear;
+  grid.innerHTML = '';
+  CAL_DAYS.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'cal-day-header';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+  const firstDay = new Date(_athlCalYear, _athlCalMonth, 1);
+  const lastDay = new Date(_athlCalYear, _athlCalMonth + 1, 0);
+  let startDow = firstDay.getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  for (let i = 0; i < startDow; i++) {
+    const d = new Date(_athlCalYear, _athlCalMonth, -(startDow - i - 1));
+    grid.appendChild(_athlCalMakeCell(d, true, todayStr));
+  }
+  for (let i = 1; i <= lastDay.getDate(); i++) {
+    grid.appendChild(_athlCalMakeCell(new Date(_athlCalYear, _athlCalMonth, i), false, todayStr));
+  }
+  const total = startDow + lastDay.getDate();
+  const rem = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let i = 1; i <= rem; i++) {
+    grid.appendChild(_athlCalMakeCell(new Date(_athlCalYear, _athlCalMonth + 1, i), true, todayStr));
+  }
+}
+
+function _athlCalMakeCell(date, otherMonth, todayStr) {
+  const dateStr = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+  const sessions = _athlCalSessions.filter(s => s.date === dateStr);
+  const cell = document.createElement('div');
+  cell.className = 'cal-cell' + (otherMonth ? ' other-month' : '') + (dateStr === todayStr ? ' today' : '') + (sessions.length ? ' has-session' : '');
+  const numEl = document.createElement('div');
+  numEl.className = 'cal-cell-num';
+  numEl.textContent = date.getDate();
+  cell.appendChild(numEl);
+  sessions.forEach(s => {
+    const pill = document.createElement('div');
+    pill.className = 'cal-pill ' + (s.type === 'group' ? 'group' : (s.status === 'proposed' ? 'proposed' : 'confirmed'));
+    pill.textContent = calFormatTime(s.timeStart) || (s.type === 'group' ? 'Gruppo' : '1:1');
+    cell.appendChild(pill);
+  });
+  return cell;
+}
+
+function athlCalRenderList() {
+  const list = document.getElementById('athlCalSessionList');
+  if (!list) return;
+  let sessions = _athlCalSessions.filter(s => {
+    const d = new Date(s.date);
+    return d.getFullYear() === _athlCalYear && d.getMonth() === _athlCalMonth;
+  });
+  sessions.sort((a,b) => (a.date + a.timeStart).localeCompare(b.date + b.timeStart));
+  if (!sessions.length) { list.innerHTML = '<div style="color:var(--muted2);font-size:13px;text-align:center;padding:20px">Nessuna sessione questo mese</div>'; return; }
+  list.innerHTML = '';
+  sessions.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'cal-session-inline ' + (s.status === 'proposed' ? 'proposed' : '');
+    const timeStr = calFormatTime(s.timeStart) + (s.timeEnd ? ' – ' + calFormatTime(s.timeEnd) : '');
+    const title = s.type === 'group' ? (s.groupName || 'Sessione di gruppo') : 'Coaching 1:1';
+    card.innerHTML =
+      '<div class="cal-session-inline-info">' +
+        '<div class="cal-session-inline-name">' + escapeHtml(title) + '</div>' +
+        '<div class="cal-session-inline-meta">📆 ' + calFormatDate(s.date) + (timeStr ? '  ⏰ ' + timeStr : '') + (s.notes ? '  📝 ' + escapeHtml(s.notes.slice(0,50)) : '') + '</div>' +
+      '</div>' +
+      '<span class="cal-session-badge ' + (s.status === 'proposed' ? 'proposed' : 'confirmed') + '">' + (s.status === 'proposed' ? 'IN ATTESA' : 'CONFERMATA') + '</span>';
+    list.appendChild(card);
+  });
+}
+
+function athlCalPrevMonth() { _athlCalMonth--; if(_athlCalMonth<0){_athlCalMonth=11;_athlCalYear--;} athlCalLoad(); }
+function athlCalNextMonth() { _athlCalMonth++; if(_athlCalMonth>11){_athlCalMonth=0;_athlCalYear++;} athlCalLoad(); }
+
+async function athlProposeSession() {
+  if (!CLOUD_ENABLED || !fbDb || !fbUser || !fbUserDoc) return;
+  const coachId = fbUserDoc.coachId;
+  if (!coachId) { showNotif('Nessun coach collegato'); return; }
+  const date = document.getElementById('athlPropDate').value;
+  if (!date) { showNotif('Inserisci una data'); return; }
+  const data = {
+    coachId,
+    type: '1on1',
+    atletaId: fbUser.uid,
+    atletaName: fbUserDoc.displayName || fbUserDoc.name || fbUser.email || '',
+    groupName: '',
+    date,
+    timeStart: document.getElementById('athlPropTimeStart').value,
+    timeEnd: document.getElementById('athlPropTimeEnd').value,
+    notes: document.getElementById('athlPropNotes').value.trim(),
+    status: 'proposed',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+  try {
+    await fbDb.collection('coachingSessions').add(data);
+    document.getElementById('athlPropDate').value = '';
+    document.getElementById('athlPropTimeStart').value = '';
+    document.getElementById('athlPropTimeEnd').value = '';
+    document.getElementById('athlPropNotes').value = '';
+    showNotif('✅ Proposta inviata al coach');
+    await athlCalLoad();
+  } catch(e) { showNotif('Errore: ' + (e && e.message || '')); }
+}
 /* renderAccountCard e saveCoachId spostati in Step 4 */
 
 async function saveDisplayName(){
@@ -5920,7 +6509,7 @@ function edResetConfirm(){ if(confirm('Svuotare l\'editor? (la scheda salvata no
 /* ============================================================
    PAGES — con slide transition
    ============================================================ */
-const _pageOrder=['log','progress','history','editor','settings'];
+const _pageOrder=['log','progress','history','calendario','editor','settings'];
 let _currentPageName='log';
 function showPage(name){
   const oldName=_currentPageName;
@@ -5942,6 +6531,7 @@ function showPage(name){
   if(name==='progress'){ renderWeight(); populateProgressSelect(); renderProgressDetail(); renderOverview(); }
   if(name==='editor'){ if(!edState.days.length) loadProgramIntoEditor(); else renderEditor(); }
   if(name==='settings') renderSettings();
+  if(name==='calendario') athlCalLoad();
   window.scrollTo(0,0);
 }
 
