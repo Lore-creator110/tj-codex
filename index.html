@@ -5356,7 +5356,7 @@ function _calRenderExpand(dateStr, row) {
       '<textarea class="notes-ta" id="calInlineNotes" rows="2" placeholder="es. Petto e tricipiti, check peso, revisione dieta…" style="font-size:12px">' + escapeHtml(editing ? editing.notes||'' : '') + '</textarea></div>' +
     '<div class="btn-row">' +
       (editing ? '<button class="btn" style="font-size:12px" onclick="calCancelInlineEdit()">Annulla</button>' : '') +
-      '<button class="btn btn-primary" style="font-size:12px" onclick="calSaveInline('' + dateStr + '')">' + (editing ? 'Aggiorna' : 'Salva sessione') + '</button>' +
+      '<button class="btn btn-primary" style="font-size:12px" onclick="calSaveInline(\'' + dateStr + '\')">' + (editing ? 'Aggiorna' : 'Salva sessione') + '</button>' +
     '</div>' +
   '</div>';
 
