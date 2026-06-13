@@ -5147,6 +5147,22 @@ function calFormatDate(d) {
 // ---- Coach: carica sessioni ----
 async function calLoad() {
   if (!CLOUD_ENABLED || !fbDb || !fbUser) return;
+  // Popola _coachAthletes da _coachRows se disponibile, altrimenti carica da Firestore
+  if (window._coachRows && window._coachRows.length) {
+    window._coachAthletes = window._coachRows.map(r => ({
+      uid: r.uid,
+      displayName: r.name || r.email || r.uid,
+    }));
+  } else {
+    try {
+      const qs = await fbDb.collection('users').where('role','==','athlete').where('coachId','==', fbUser.uid).get();
+      window._coachAthletes = [];
+      qs.forEach(doc => {
+        const u = doc.data() || {};
+        window._coachAthletes.push({uid: doc.id, displayName: u.name || u.email || doc.id});
+      });
+    } catch(e) { window._coachAthletes = []; }
+  }
   try {
     const qs = await fbDb.collection('coachingSessions').where('coachId','==', fbUser.uid).get();
     _calSessions = [];
