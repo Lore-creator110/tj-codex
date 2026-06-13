@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tj-codex-v1';
+const CACHE_NAME = 'tj-codex-v2';
 
 // File da cachare per funzionamento offline
 const STATIC_ASSETS = [
