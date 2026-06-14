@@ -5706,6 +5706,20 @@ function bootAfterData(){
   document.getElementById('authGate').style.display='none';
   document.getElementById('coachGate').style.display='none';
   if(PROGRAM && PROGRAM.days && PROGRAM.days.length){ enterApp(); }
+  else if(fbUserDoc && fbUserDoc.role === 'athlete' && fbUserDoc.coachId){
+    // Atleta con coach ma senza scheda ancora — mostra messaggio d'attesa
+    document.getElementById('onboarding').style.display='none';
+    document.getElementById('appHeader').style.display='flex';
+    document.getElementById('appTabs').style.display='flex';
+    document.getElementById('themeRow').style.display='flex';
+    document.getElementById('appMain').style.display='block';
+    document.getElementById('appSub').textContent='— In attesa della scheda';
+    document.body.classList.add('coach-ro');
+    const banner = document.getElementById('roBanner');
+    if(banner){ banner.style.display='flex'; document.getElementById('roBannerText').textContent='Il tuo coach non ha ancora caricato la scheda'; }
+    initTheme();
+    showPage('log');
+  }
   else { document.getElementById('onboarding').style.display='flex'; }
   renderAccountCard();
 }
@@ -5860,6 +5874,16 @@ function enterApp(){
   document.getElementById('themeRow').style.display='flex';
   document.getElementById('appMain').style.display='block';
   document.getElementById('appSub').textContent='— '+(PROGRAM.meta.name||'Scheda');
+  // Se l'atleta ha un coach collegato → modalità sola lettura
+  if(fbUserDoc && fbUserDoc.role === 'athlete' && fbUserDoc.coachId){
+    document.body.classList.add('coach-ro');
+    const banner = document.getElementById('roBanner');
+    if(banner){ banner.style.display='flex'; document.getElementById('roBannerText').textContent='Scheda gestita dal tuo coach — sola lettura'; }
+  } else {
+    document.body.classList.remove('coach-ro');
+    const banner = document.getElementById('roBanner');
+    if(banner) banner.style.display='none';
+  }
   initTheme();
   setupJournal();
   populateProgressSelect();
